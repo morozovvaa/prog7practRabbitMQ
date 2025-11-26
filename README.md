@@ -104,3 +104,4 @@ docker --version
 Docker version 27.4.0, build bde2b89
 ```
 
+<img width="1076" height="334" alt="image" src="https://github.com/user-attachments/assets/a6ea1edf-3d91-431f-b914-911cd6c65e94" />
