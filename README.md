@@ -534,65 +534,6 @@ html<div class="bg-gray-800 p-6 rounded-2xl">
 ### Структура проекта
 ```
 weather-aggregator-system/
-├── weather-api-service/                           # Backend REST API
-│ ├── src/main/java/com/weather/api/
-│ │ ├── config/                                    # Конфигурация RabbitMQ
-│ │ │ ├── RabbitMQConfig.java
-│ │ │ ├── WebSocketConfig.java
-│ │ ├── controller/                                # REST контроллеры
-│ │ │ ├── WeatherController.java
-│ │ ├── dto/                                         # Data Transfer Objects
-│ │ │ ├── AggregatedWeatherReport.java
-│ │ │ ├── WeatherData.java
-│ │ │ ├── WeatherMessage.java
-│ │ │ ├── WeatherRequestDto.java
-│ │ └── handler/
-│ │ │ ├── WeatherWebSocketHandler.java
-│ │ └── service/                                 # Бизнес-логика
-│ │ │ ├── WeatherService.java
-│ ├── pom.xml
-│ └── WeatherApiApplication.java
-│
-├── weather-consumer-service/ # Consumer для вызова Weather API
-│ ├── src/main/java/com/weather/consumer/
-│ │ ├── client/ # HTTP клиент для Weather API
-WeatherApiClient.java
-│ │ ├── config/ # Конфигурация
-RabbitMQConfig.java
-CacheConfig.java
-│ │ ├── dto/ # DTO
-weather-consumer-service\src\main\java\com\weather\consumer\dto\OpenWeatherMapResponse.java
-weather-consumer-service\src\main\java\com\weather\consumer\dto\WeatherMessage.java
-C:\Users\diamo\PycharmProjects\Rabbit\weather-consumer-service\src\main\java\com\weather\consumer\dto\WeatherResponse.java
-
-│ │ └── service/ # Обработка сообщений
-weather-consumer-service\src\main\java\com\weather\consumer\service\DeadLetterQueueService.java
-weather-consumer-service\src\main\java\com\weather\consumer\service\WeatherConsumerService.java
-
-weather-consumer-service\src\main\java\com\weather\consumer\WeatherConsumerApplication.java
-│ └── pom.xml
-
-├── weather-aggregator-service/ # Aggregator для сбора результатов
-│ ├── src/main/java/com/weather/aggregator/
-│ │ ├── config/ # Конфигурация
-RabbitMQConfig.java
-│ │ ├── dto/ # DTO
-weather-aggregator-service\src\main\java\com\weather\aggregator\dto\AggregatedWeatherReport.java
-weather-aggregator-service\src\main\java\com\weather\aggregator\dto\WeatherData.java
-weather-aggregator-service\src\main\java\com\weather\aggregator\dto\WeatherResponse.java
-│ │ └── service/ # Логика агрегации
-weather-aggregator-service\src\main\java\com\weather\aggregator\service\WeatherAggregatorService.java
-
-weather-aggregator-service\src\main\java\com\weather\aggregator\WeatherAggregatorApplication.java
-│ └── pom.xml
-├── weather-frontend/ # Frontend приложение
-│ ├── css/style.css
-│ ├── js/app.js
-│ └── index.html
-├── docker-compose.yml # Docker Compose для RabbitMQ
-
-
-weather-aggregator-system/
 ├── weather-api-service/                            # Backend REST API (Producer)
 │   ├── src/main/java/com/weather/api/
 │   │   ├── config/                                 # Конфигурация брокера и сокетов
@@ -645,9 +586,8 @@ weather-aggregator-system/
 │   ├── **js/app.js**                               # JavaScript-логика (отправка REST, подключение WebSocket, отображение)
 │   └── **index.html**                              # Главная страница
 │
-└── **docker-compose.yml**                         # Docker Compose для RabbitMQ (и, возможно, Redis/Postgres)
+└── **docker-compose.yml**                         # Docker Compose
 
-<img width="1266" height="908" alt="image" src="https://github.com/user-attachments/assets/fb165edf-adc6-4728-931f-ee2917d0025a" />
+```
 
-
-<img width="1076" height="334" alt="image" src="https://github.com/user-attachments/assets/a6ea1edf-3d91-431f-b914-911cd6c65e94" />
+---
