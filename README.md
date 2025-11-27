@@ -2,7 +2,10 @@
 ##  Цель работы
 
 
-<img width="1125" height="872" alt="image" src="https://github.com/user-attachments/assets/e1553060-72f2-4897-95b3-8473326bf6af" />
+<img width="1125" height="782" alt="image" src="https://github.com/user-attachments/assets/857e0819-6b7b-40cf-a9bc-b8fc60e533f0" />
+
+
+<img width="1137" height="815" alt="image" src="https://github.com/user-attachments/assets/33554241-59d5-4e54-af08-71e1ba826288" />
 
 Целью данной лабораторной работы является получение практических навыков в разработке распределенных систем
 с использованием микросервисной архитектуры, брокера сообщений RabbitMQ и реализации интеграционных паттернов (Enterprise Integration Patterns). По завершении работы студенты создадут полнофункциональное приложение
