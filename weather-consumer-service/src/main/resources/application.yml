@@ -1,0 +1,58 @@
+server:
+  port: 8081
+
+spring:
+  application:
+    name: weather-consumer-service
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: admin
+    password: admin
+    listener:
+      simple:
+        # Установка количества потоков для параллельной обработки запросов
+        concurrency: 5 
+        max-concurrency: 10 
+        # КРИТИЧЕСКИ ВАЖНО для DLQ: ручное подтверждение, чтобы отправлять в DLQ при ошибке
+        acknowledge-mode: manual
+        # Предварительная выборка сообщений 
+        prefetch: 5 
+
+  # Конфигурация кэша Caffeine
+  cache:
+    type: caffeine
+    caffeine:
+      spec: maximumSize=500,expireAfterWrite=5m 
+    cache-names:
+      - weather 
+
+# --- Конфигурация RabbitMQ ---
+rabbitmq:
+  queue:
+    # Очередь, которую слушает Consumer Service
+    request: weather.request.queue
+    # Очередь, куда Consumer Service отправляет ответ
+    response: weather.response.queue
+  exchange:
+    weather: weather.exchange
+  routing-key:
+    request: weather.request
+    response: weather.response
+  
+  # --- КОНФИГУРАЦИЯ DLQ (Добавлено для полноты) ---
+  dl:
+    exchange: weather.dl.exchange
+    queue: weather.dl.queue
+
+# Конфигурация OpenWeatherMap API
+weather:
+  api:
+    key: YOUR_API_KEY_HERE
+    url: https://api.openweathermap.org/data/2.5/weather
+    delay: 500
+
+logging:
+  level:
+    com.weather: DEBUG
+    org.springframework.amqp: DEBUG

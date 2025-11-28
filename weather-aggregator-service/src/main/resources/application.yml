@@ -1,0 +1,30 @@
+server:
+  port: 8082
+
+spring:
+  application:
+    name: weather-aggregator-service
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: admin
+    password: admin
+
+rabbitmq:
+  queue:
+    response: weather.response.queue
+    aggregated: weather.aggregated.queue
+  exchange:
+    weather: weather.exchange
+  routing-key:
+    response: weather.response  
+    aggregated: weather.aggregated
+
+# Таймаут ожидания всех ответов в секундах
+aggregator:
+  timeout: 5
+
+logging:
+  level:
+    com.weather: DEBUG
+    org.springframework.amqp: DEBUG

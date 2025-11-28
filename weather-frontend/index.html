@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Real-time Анализ Погоды | WebSocket</title>
+    <!-- Подключение Tailwind CSS CDN для стильного дизайна -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Подключение пользовательских стилей -->
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        html { font-family: 'Inter', sans-serif; }
+        
+        /* Анимация появления карточек */
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .card-appear {
+            animation: slideIn 0.3s ease-out;
+        }
+        
+        /* Пульсация для статуса "обрабатывается" */
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .processing {
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-gray-900 text-white p-4 sm:p-8">
+
+    <div id="app-container" class="max-w-4xl mx-auto">
+        <!-- Заголовок с индикатором подключения -->
+        <header class="mb-8">
+            <div class="flex justify-between items-center">
+                <div>
+                    <h1 class="text-4xl font-extrabold text-blue-400 border-b-2 border-blue-600 pb-2">
+                        Real-time Анализ Погоды
+                    </h1>
+                    <p class="text-gray-400 mt-2">
+                        WebSocket • Инкрементальные обновления в реальном времени
+                    </p>
+                </div>
+                <!-- Индикатор статуса WebSocket -->
+                <div id="connection-status" class="flex items-center gap-2 px-4 py-2 bg-gray-800 rounded-lg">
+                    <div id="status-indicator" class="w-3 h-3 rounded-full bg-gray-500"></div>
+                    <span id="status-text" class="text-sm text-gray-400">Отключено</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Секция Ввода и Запуска -->
+        <div class="bg-gray-800 p-6 rounded-2xl shadow-xl mb-8">
+            <label for="cities-input" class="block text-sm font-medium text-gray-300 mb-2">
+                Города (через запятую)
+            </label>
+            <div class="flex flex-col sm:flex-row gap-4">
+                <input
+                    id="cities-input"
+                    type="text"
+                    value="London, Paris, Moscow, New York, Tokyo, Berlin"
+                    class="flex-grow p-3 bg-gray-700 border border-gray-600 rounded-lg focus:ring-blue-500 focus:border-blue-500 text-white placeholder-gray-400"
+                    placeholder="Например: Paris, London, Tokyo..."
+                />
+                <button
+                    id="start-button"
+                    class="flex items-center justify-center px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg shadow-lg transition duration-150 transform hover:scale-[1.01]"
+                >
+                    <svg id="button-icon" class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                    <span id="button-text">Начать анализ</span>
+                </button>
+            </div>
+            
+            <!-- Информация о технологии -->
+            <div class="mt-4 p-3 bg-blue-900/20 border border-blue-800 rounded-lg">
+                <p class="text-xs text-blue-300">
+                    <strong>🚀 WebSocket Real-time:</strong> Результаты появляются мгновенно по мере готовности, без ожидания всех данных.
+                </p>
+            </div>
+        </div>
+
+        <!-- Секция Статуса и Прогресса (Изначально скрыта) -->
+        <div id="status-section" class="bg-gray-800 p-6 rounded-2xl shadow-xl hidden">
+            <div class="flex justify-between items-center mb-4 border-b border-gray-700 pb-3">
+                <h2 class="text-xl font-bold text-gray-200">
+                    Статус Задачи <span id="correlation-id" class="text-blue-400">ID: ...</span>
+                </h2>
+                <div id="status-badge" class="px-3 py-1 text-sm font-medium rounded-full bg-yellow-800 text-yellow-300">
+                    В процессе
+                </div>
+            </div>
+
+            <!-- Прогресс-бар -->
+            <div class="mb-6">
+                <div class="flex justify-between text-sm font-medium mb-1 text-gray-300">
+                    <span id="progress-text">Прогресс: 0 из 0</span>
+                    <span id="progress-percentage">0%</span>
+                </div>
+                <div class="w-full bg-gray-700 rounded-full h-3">
+                    <div
+                        id="progress-bar-fill"
+                        class="bg-blue-500 h-3 rounded-full transition-all duration-700 ease-out"
+                        style="width: 0%"
+                    ></div>
+                </div>
+            </div>
+
+            <!-- Предупреждение о частичном результате (скрыто по умолчанию) -->
+            <div id="partial-warning" class="mb-6 p-4 bg-yellow-900/30 border border-yellow-700 rounded-lg hidden">
+                <div class="flex items-center">
+                    <svg class="w-5 h-5 text-yellow-400 mr-3 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.332 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                    <div>
+                        <strong class="text-yellow-300">⚠️ Частичный результат</strong>
+                        <p id="partial-reason" class="text-yellow-200 text-sm mt-1"></p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Результаты (Real-time обновления) -->
+            <div id="results-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <!-- Карточки результатов будут добавлены здесь через JS в реальном времени -->
+            </div>
+        </div>
+        
+        <!-- Инструкция для пустого экрана -->
+        <div id="initial-message" class="text-center p-12 bg-gray-800 rounded-2xl shadow-xl">
+            <svg class="w-16 h-16 mx-auto text-blue-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+            <p class="text-gray-400 text-lg">Нажмите "Начать анализ" для запуска real-time обработки через WebSocket</p>
+            <p class="text-gray-500 text-sm mt-2">Результаты будут появляться мгновенно по мере готовности</p>
+        </div>
+
+    </div>
+
+    <!-- Подключение основного JS-файла -->
+    <script src="js/app.js"></script>
+</body>
+</html>
